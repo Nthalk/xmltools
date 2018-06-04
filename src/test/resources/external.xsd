@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:external="xmltools-external" elementFormDefault="qualified" targetNamespace="xmltools-external" version="1.0">
+
+  <xs:element name="external" type="external:external"/>
+
+  <xs:complexType name="external">
+    <xs:sequence/>
+    <xs:attribute name="external-attribute" type="xs:string"/>
+  </xs:complexType>
+</xs:schema>

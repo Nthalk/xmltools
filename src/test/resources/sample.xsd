@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:sample="xmltools" elementFormDefault="qualified" targetNamespace="xmltools" version="1.0">
+
+  <xs:element name="sample" type="sample:sample"/>
+
+  <xs:element name="sample-embededded" type="sample:sampleEmbedded"/>
+
+  <xs:complexType name="sample">
+    <xs:sequence>
+      <xs:any maxOccurs="unbounded" minOccurs="0" processContents="lax"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="sampleEmbedded">
+    <xs:all/>
+    <xs:attribute name="sample-value" type="xs:string"/>
+  </xs:complexType>
+</xs:schema>
