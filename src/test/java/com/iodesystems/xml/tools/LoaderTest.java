@@ -19,8 +19,8 @@ public class LoaderTest {
     XmlLoader xmlloader =
         new XmlLoaderBuilder()
             .addClass(Sample.class)
-            .addClass(SampleEmbedded.class, "classpath:sample.xsd")
-            .addClass(External.class, "classpath:external.xsd")
+            .addClass("classpath:sample.xsd", SampleEmbedded.class)
+            .addClass("classpath:external.xsd", External.class)
             .build();
     try {
       Loaded<Sample> load = xmlloader.load(Sample.class, "classpath:sample.xml");

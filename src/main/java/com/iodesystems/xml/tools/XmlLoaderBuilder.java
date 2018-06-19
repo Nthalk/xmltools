@@ -10,12 +10,19 @@ public class XmlLoaderBuilder {
 
   private final Map<Class<?>, String> classesBySchemaLocation = new HashMap<>();
 
-  public XmlLoaderBuilder addClass(Class<?> cls) {
-    classesBySchemaLocation.put(cls, null);
+  public XmlLoaderBuilder addClasses(String validationLocation, Class<?> cls, Class<?>... clses) {
+    addClass(validationLocation, cls);
+    for (Class<?> aClass : clses) {
+      addClass(validationLocation, aClass);
+    }
     return this;
   }
 
-  public XmlLoaderBuilder addClass(Class<?> cls, String validationLocation) {
+  public XmlLoaderBuilder addClass(Class<?> cls) {
+    return addClass(null, cls);
+  }
+
+  public XmlLoaderBuilder addClass(String validationLocation, Class<?> cls) {
     classesBySchemaLocation.put(cls, validationLocation);
     return this;
   }

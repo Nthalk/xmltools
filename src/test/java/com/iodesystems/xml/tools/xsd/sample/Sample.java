@@ -39,7 +39,7 @@ public class Sample implements RequiresNodeResolution {
 
   @Override
   public void resolveNodes(XmlLoader.NodeResolver nodeResolver) throws NodeLoadErrored {
-    List<ResolvedNode<?>> resolve = nodeResolver.resolve(this, children);
+    List<ResolvedNode<?>> resolve = nodeResolver.resolveAll(this, children);
     Fn.of(resolve)
         .depth(ResolvedNode::getChildren)
         .each(

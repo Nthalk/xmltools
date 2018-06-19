@@ -19,6 +19,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.Unmarshaller.Listener;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.stream.XMLInputFactory;
@@ -49,19 +50,25 @@ public class XmlLoader {
     // Preload all schemas
     SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
     for (String schemaLocation : classesBySchemaLocation.values()) {
-      if (schemaLocation == null) continue;
+      if (schemaLocation == null) {
+        continue;
+      }
       initSchema(schemaFactory, schemaLocation);
     }
 
     // Register xmlIdentifiers
     for (Class<?> cl : classesBySchemaLocation.keySet()) {
       XmlRootElement xmlElementName = cl.getAnnotation(XmlRootElement.class);
-      if (xmlElementName == null) continue;
+      if (xmlElementName == null) {
+        continue;
+      }
       String name = xmlElementName.name();
       String namespace = xmlElementName.namespace();
       if ("##default".equals(namespace)) {
         XmlSchema xmlElementNamespace = cl.getPackage().getAnnotation(XmlSchema.class);
-        if (xmlElementNamespace == null) continue;
+        if (xmlElementNamespace == null) {
+          continue;
+        }
         namespace = xmlElementNamespace.namespace();
       }
       xmlIdentifierToClass.put(namespace + ":" + name, cl);
@@ -99,9 +106,19 @@ public class XmlLoader {
         unmarshaller.setSchema(schemasByLocation.get(validateSchema));
       }
       Locator locator = new Locator(xsr);
-      unmarshaller.setListener(locator.getListener());
+      final List<Object> loaded = new ArrayList<>();
+      final Listener listener = locator.getListener();
+
+      unmarshaller.setListener(
+          new Listener() {
+            @Override
+            public void beforeUnmarshal(Object target, Object parent) {
+              loaded.add(target);
+              listener.beforeUnmarshal(target, parent);
+            }
+          });
       T value = unmarshaller.unmarshal(xsr, cls).getValue();
-      postProcess(value, locator);
+      postProcess(loaded, locator);
       return new FileLoaded<>(fileSource, value, locator, this);
     } catch (XMLStreamException | JAXBException | XmlValidationException e) {
       throw new FileLoadErrored(fileSource, cls, e, this);
@@ -111,7 +128,9 @@ public class XmlLoader {
   private void initSchema(SchemaFactory schemaFactory, String validateSchemaLocation)
       throws SAXException, MalformedURLException {
     Schema schema = schemasByLocation.get(validateSchemaLocation);
-    if (schema != null) return;
+    if (schema != null) {
+      return;
+    }
     if (validateSchemaLocation.startsWith("classpath:")) {
       schema =
           schemaFactory.newSchema(
@@ -131,26 +150,37 @@ public class XmlLoader {
   public <T> T load(Class<T> cls, Node node, Locator nodeLocator) throws NodeLoadErrored {
     try {
       Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+      final List<Object> loaded = new ArrayList<>();
+      unmarshaller.setListener(
+          new Listener() {
+            @Override
+            public void beforeUnmarshal(Object target, Object parent) {
+              loaded.add(target);
+            }
+          });
       JAXBElement<T> unmarshal = unmarshaller.unmarshal(node, cls);
       T value = unmarshal.getValue();
-      postProcess(value, nodeLocator);
+      postProcess(loaded, nodeLocator);
       return value;
     } catch (JAXBException | XmlValidationException e) {
       throw new NodeLoadErrored(node, nodeLocator, cls, e, this);
     }
   }
 
-  private <T> void postProcess(T value, Locator locator)
+  private void postProcess(List<Object> values, Locator locator)
       throws NodeLoadErrored, XmlValidationException {
-    if (value instanceof RequiresNodeResolution) {
-      ((RequiresNodeResolution) value).resolveNodes(new NodeResolver(this, locator));
-    }
-    if (value instanceof XmlValidated) {
-      ((XmlValidated) value).validate();
+    for (Object value : values) {
+      if (value instanceof RequiresNodeResolution) {
+        ((RequiresNodeResolution) value).resolveNodes(new NodeResolver(this, locator));
+      }
+      if (value instanceof XmlValidated) {
+        ((XmlValidated) value).validate();
+      }
     }
   }
 
   public static class NodeResolver {
+
     private final XmlLoader xmlLoader;
     private final Locator locator;
 
@@ -161,6 +191,9 @@ public class XmlLoader {
 
     @SuppressWarnings("unchecked")
     public ResolvedNode<?> resolve(Object parent, Object node) throws NodeLoadErrored {
+      if (node == null) {
+        return null;
+      }
       if (node instanceof Node) {
         Node element = (Node) node;
         String nodeName = element.getLocalName();
@@ -184,7 +217,11 @@ public class XmlLoader {
       }
     }
 
-    public List<ResolvedNode<?>> resolve(Object parent, List<Object> nodes) throws NodeLoadErrored {
+    public List<ResolvedNode<?>> resolveAll(Object parent, List<Object> nodes)
+        throws NodeLoadErrored {
+      if (nodes == null) {
+        return null;
+      }
       List<ResolvedNode<?>> processed = new ArrayList<>(nodes.size());
       for (Object node : nodes) {
         processed.add(resolve(parent, node));
