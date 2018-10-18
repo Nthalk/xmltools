@@ -5,6 +5,7 @@ import java.util.List;
 import org.w3c.dom.Node;
 
 public class ResolvedNode<T> {
+
   private final Node node;
   private final T resolvedAs;
   private final List<ResolvedNode<?>> children = new ArrayList<>();

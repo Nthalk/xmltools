@@ -7,8 +7,9 @@ import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamReader;
 
 public class Locator extends Unmarshaller.Listener {
-  private XMLStreamReader xsr;
-  private Map<Object, Location> locations;
+
+  private final XMLStreamReader xsr;
+  private final Map<Object, Location> locations;
   private final Unmarshaller.Listener listener =
       new Unmarshaller.Listener() {
         @Override

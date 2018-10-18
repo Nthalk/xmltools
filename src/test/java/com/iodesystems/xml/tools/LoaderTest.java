@@ -6,16 +6,13 @@ import com.iodesystems.xml.tools.loaded.Loaded;
 import com.iodesystems.xml.tools.xsd.external.External;
 import com.iodesystems.xml.tools.xsd.sample.Sample;
 import com.iodesystems.xml.tools.xsd.sample.SampleEmbedded;
-import java.net.MalformedURLException;
-import javax.xml.bind.JAXBException;
 import javax.xml.stream.Location;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 
 public class LoaderTest {
 
   @Test
-  public void test() throws JAXBException, MalformedURLException, SAXException {
+  public void test() {
     XmlLoader xmlloader =
         new XmlLoaderBuilder()
             .addClass(Sample.class)

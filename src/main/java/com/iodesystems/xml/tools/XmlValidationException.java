@@ -1,6 +1,7 @@
 package com.iodesystems.xml.tools;
 
 public class XmlValidationException extends Exception {
+
   public XmlValidationException() {}
 
   public XmlValidationException(String message) {

@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "sample-embededded")
 @XmlType(propOrder = {})
 public class SampleEmbedded {
+
   @XmlAttribute(name = "sample-value")
   String sampleValue;
 

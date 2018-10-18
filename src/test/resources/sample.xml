@@ -1,10 +1,10 @@
-<sample xmlns="xmltools" xmlns:external="xmltools-external">
+<sample xmlns:external="xmltools-external" xmlns="xmltools">
+  <external:external external-attribute="yaya"/>
+  <test>
+    <sample-embededded sample-value="HEYO!"/>
+  </test>
+  <test2>
     <external:external external-attribute="yaya"/>
-    <test>
-        <sample-embededded sample-value="HEYO!"/>
-    </test>
-    <test2>
-        <external:external external-attribute="yaya"/>
-    </test2>
-    <what attribute="value"/>
+  </test2>
+  <what attribute="value"/>
 </sample>

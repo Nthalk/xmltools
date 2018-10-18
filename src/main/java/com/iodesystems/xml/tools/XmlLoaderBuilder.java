@@ -1,10 +1,7 @@
 package com.iodesystems.xml.tools;
 
-import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
-import javax.xml.bind.JAXBException;
-import org.xml.sax.SAXException;
 
 public class XmlLoaderBuilder {
 
@@ -27,7 +24,7 @@ public class XmlLoaderBuilder {
     return this;
   }
 
-  public XmlLoader build() throws JAXBException, MalformedURLException, SAXException {
+  public XmlLoader build() {
     return new XmlLoader(classesBySchemaLocation);
   }
 }

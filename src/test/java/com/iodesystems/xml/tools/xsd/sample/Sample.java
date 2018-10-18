@@ -15,11 +15,13 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "sample")
 @XmlType(propOrder = {})
 public class Sample implements RequiresNodeResolution {
+
+  private final List<External> externals = new ArrayList<>();
+
   @XmlAnyElement(lax = true)
   private List<Object> children;
 
   private SampleEmbedded sampleEmbedded;
-  private List<External> externals = new ArrayList<>();
 
   public List<Object> getChildren() {
     return children;

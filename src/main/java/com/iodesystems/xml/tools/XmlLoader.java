@@ -40,11 +40,14 @@ public class XmlLoader {
   private final Map<String, Schema> schemasByLocation = new HashMap<>();
   private final Map<Class<?>, String> classesBySchemaLocation;
 
-  public XmlLoader(Map<Class<?>, String> classesBySchemaLocation)
-      throws JAXBException, MalformedURLException, SAXException {
+  public XmlLoader(Map<Class<?>, String> classesBySchemaLocation) {
     this.classesBySchemaLocation = classesBySchemaLocation;
-    jaxbContext =
-        JAXBContext.newInstance(classesBySchemaLocation.keySet().toArray(new Class<?>[0]));
+    try {
+      Class<?>[] classes = classesBySchemaLocation.keySet().toArray(new Class<?>[0]);
+      jaxbContext = JAXBContext.newInstance(classes);
+    } catch (JAXBException e) {
+      throw new IllegalStateException("Cannot create JAXBContext", e);
+    }
     xmlInputFactory = XMLInputFactory.newFactory();
 
     // Preload all schemas
@@ -125,26 +128,38 @@ public class XmlLoader {
     }
   }
 
-  private void initSchema(SchemaFactory schemaFactory, String validateSchemaLocation)
-      throws SAXException, MalformedURLException {
+  private void initSchema(SchemaFactory schemaFactory, String validateSchemaLocation) {
     Schema schema = schemasByLocation.get(validateSchemaLocation);
     if (schema != null) {
       return;
     }
-    if (validateSchemaLocation.startsWith("classpath:")) {
-      schema =
-          schemaFactory.newSchema(
-              new StreamSource(
-                  getClass()
-                      .getClassLoader()
-                      .getResourceAsStream(
-                          validateSchemaLocation.substring("classpath:".length()))));
-    } else if (validateSchemaLocation.startsWith("http")) {
-      schema = schemaFactory.newSchema(new URL(validateSchemaLocation));
-    } else {
-      schema = schemaFactory.newSchema(new File(validateSchemaLocation));
+    try {
+      if (validateSchemaLocation.startsWith("classpath:")) {
+        InputStream schemaStream =
+            getClass()
+                .getClassLoader()
+                .getResourceAsStream(validateSchemaLocation.substring("classpath:".length()));
+        if (schemaStream == null) {
+          throw new IllegalArgumentException("Schema not found at " + validateSchemaLocation);
+        }
+        schema = schemaFactory.newSchema(new StreamSource(schemaStream));
+      } else if (validateSchemaLocation.startsWith("http")) {
+        try {
+          schema = schemaFactory.newSchema(new URL(validateSchemaLocation));
+        } catch (MalformedURLException e) {
+          throw new IllegalArgumentException("Invalid url for schema " + validateSchemaLocation);
+        }
+      } else {
+        File schemaFile = new File(validateSchemaLocation);
+        if (!schemaFile.canRead()) {
+          throw new IllegalArgumentException("Schema not readable at " + validateSchemaLocation);
+        }
+        schema = schemaFactory.newSchema(schemaFile);
+      }
+      schemasByLocation.put(validateSchemaLocation, schema);
+    } catch (SAXException e) {
+      throw new IllegalArgumentException("Invalid schema found at " + validateSchemaLocation, e);
     }
-    schemasByLocation.put(validateSchemaLocation, schema);
   }
 
   public <T> T load(Class<T> cls, Node node, Locator nodeLocator) throws NodeLoadErrored {
@@ -202,8 +217,7 @@ public class XmlLoader {
         if (resolveClass != null) {
           Object load = xmlLoader.load(resolveClass, element, null);
           locator.alias(parent, load);
-          ResolvedNode<Object> resolvedNode = new ResolvedNode<>(element, load);
-          return resolvedNode;
+          return new ResolvedNode<>(element, load);
         } else {
           ResolvedNode<Object> resolvedNode = new ResolvedNode<>(element, null);
           NodeList childNodes = element.getChildNodes();

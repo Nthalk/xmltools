@@ -5,6 +5,7 @@ import com.iodesystems.xml.tools.XmlLoader;
 import javax.xml.stream.Location;
 
 public class FileLoaded<T> implements Loaded<T> {
+
   private final String fileSource;
   private final T value;
   private final Locator locator;

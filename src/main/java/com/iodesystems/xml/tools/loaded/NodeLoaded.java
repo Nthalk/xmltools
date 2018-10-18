@@ -5,6 +5,7 @@ import javax.xml.stream.Location;
 import org.w3c.dom.Node;
 
 public class NodeLoaded<T> implements Loaded<T> {
+
   private final Node node;
   private final Locator nodeLocator;
   private final T value;
