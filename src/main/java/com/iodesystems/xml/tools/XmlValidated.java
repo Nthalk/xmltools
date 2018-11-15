@@ -2,5 +2,5 @@ package com.iodesystems.xml.tools;
 
 public interface XmlValidated {
 
-  void validate();
+  void validate() throws XmlValidationException;
 }

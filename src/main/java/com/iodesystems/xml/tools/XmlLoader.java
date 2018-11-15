@@ -162,6 +162,26 @@ public class XmlLoader {
     }
   }
 
+  public <T> Result<T> result(Class<T> cls, String file, InputStream contents) {
+    try {
+      return new Result<>(load(cls, file, contents));
+    } catch (FileLoadErrored fileLoadErrored) {
+      return new Result<>(fileLoadErrored);
+    } catch (NodeLoadErrored nodeLoadErrored) {
+      return new Result<>(nodeLoadErrored);
+    }
+  }
+
+  public <T> Result<T> result(Class<T> cls, String file) {
+    try {
+      return new Result<>(load(cls, file));
+    } catch (FileLoadErrored fileLoadErrored) {
+      return new Result<>(fileLoadErrored);
+    } catch (NodeLoadErrored nodeLoadErrored) {
+      return new Result<>(nodeLoadErrored);
+    }
+  }
+
   public <T> T load(Class<T> cls, Node node, Locator nodeLocator) throws NodeLoadErrored {
     try {
       Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
