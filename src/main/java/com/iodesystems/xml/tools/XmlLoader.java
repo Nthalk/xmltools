@@ -4,6 +4,7 @@ import com.iodesystems.xml.tools.loaded.FileLoadErrored;
 import com.iodesystems.xml.tools.loaded.FileLoaded;
 import com.iodesystems.xml.tools.loaded.Loaded;
 import com.iodesystems.xml.tools.loaded.NodeLoadErrored;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -90,6 +91,8 @@ public class XmlLoader {
           cls,
           source,
           getClass().getClassLoader().getResourceAsStream(source.substring("classpath:".length())));
+    } else if (source.startsWith("<")) {
+      return load(cls, "inline", new ByteArrayInputStream(source.getBytes()));
     } else {
       try {
         throw new IllegalArgumentException("Unknown scheme: " + source);
