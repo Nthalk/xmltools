@@ -207,7 +207,7 @@
     <dependency>
       <groupId>com.iodesystems</groupId>
       <artifactId>fn</artifactId>
-      <version>2.1.6</version>
+      <version>3.0.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
