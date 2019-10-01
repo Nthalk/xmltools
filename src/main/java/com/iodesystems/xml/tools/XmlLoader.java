@@ -111,23 +111,27 @@ public class XmlLoader {
       if (validateSchema != null) {
         unmarshaller.setSchema(schemasByLocation.get(validateSchema));
       }
-      Locator locator = new Locator(xsr);
-      final List<Object> loaded = new ArrayList<>();
+      Locator locator = new Locator(fileSource, xsr);
       final Listener listener = locator.getListener();
-
       unmarshaller.setListener(
           new Listener() {
+
             @Override
             public void beforeUnmarshal(Object target, Object parent) {
-              loaded.add(target);
               listener.beforeUnmarshal(target, parent);
+            }
+
+            @Override
+            public void afterUnmarshal(Object target, Object parent) {
+              processUnmarshalled(target, locator);
             }
           });
       T value = unmarshaller.unmarshal(xsr, cls).getValue();
-      postProcess(loaded, locator);
       return new FileLoaded<>(fileSource, value, locator, this);
-    } catch (XMLStreamException | JAXBException | XmlValidationException e) {
+    } catch (XMLStreamException | JAXBException e) {
       throw new FileLoadErrored(fileSource, cls, e, this);
+    } catch (SneakyException e) {
+      throw new FileLoadErrored(fileSource, cls, e.getCause(), this);
     }
   }
 
@@ -185,34 +189,46 @@ public class XmlLoader {
     }
   }
 
-  public <T> T load(Class<T> cls, Node node, Locator nodeLocator) throws NodeLoadErrored {
+  public <T> T load(Class<T> cls, Node node, Locator locator) throws NodeLoadErrored {
     try {
       Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-      final List<Object> loaded = new ArrayList<>();
+      Listener listener = locator.getListener();
       unmarshaller.setListener(
           new Listener() {
+
             @Override
             public void beforeUnmarshal(Object target, Object parent) {
-              loaded.add(target);
+              listener.beforeUnmarshal(target, parent);
+            }
+
+            @Override
+            public void afterUnmarshal(Object value, Object parent) {
+              processUnmarshalled(value, locator);
             }
           });
       JAXBElement<T> unmarshal = unmarshaller.unmarshal(node, cls);
-      T value = unmarshal.getValue();
-      postProcess(loaded, nodeLocator);
-      return value;
-    } catch (JAXBException | XmlValidationException e) {
-      throw new NodeLoadErrored(node, nodeLocator, cls, e, this);
+      return unmarshal.getValue();
+    } catch (SneakyException e) {
+      throw new NodeLoadErrored(node, locator, cls, e.getCause(), this);
+    } catch (JAXBException e) {
+      throw new NodeLoadErrored(node, locator, cls, e, this);
     }
   }
 
-  private void postProcess(List<Object> values, Locator locator)
-      throws NodeLoadErrored, XmlValidationException {
-    for (Object value : values) {
-      if (value instanceof RequiresNodeResolution) {
-        ((RequiresNodeResolution) value).resolveNodes(new NodeResolver(this, locator));
+  private void processUnmarshalled(Object value, Locator nodeLocator) {
+    if (value instanceof RequiresNodeResolution) {
+      try {
+        ((RequiresNodeResolution) value)
+            .resolveNodes(new NodeResolver(XmlLoader.this, nodeLocator));
+      } catch (NodeLoadErrored nodeLoadErrored) {
+        throw new SneakyException(nodeLoadErrored);
       }
-      if (value instanceof XmlValidated) {
+    }
+    if (value instanceof XmlValidated) {
+      try {
         ((XmlValidated) value).validate();
+      } catch (XmlValidationException e) {
+        throw new SneakyException(e);
       }
     }
   }
@@ -238,8 +254,7 @@ public class XmlLoader {
         String namespaceURI = element.getNamespaceURI();
         Class resolveClass = xmlLoader.xmlIdentifierToClass.get(namespaceURI + ":" + nodeName);
         if (resolveClass != null) {
-          Object load = xmlLoader.load(resolveClass, element, null);
-          locator.alias(parent, load);
+          Object load = xmlLoader.load(resolveClass, element, locator);
           return new ResolvedNode<>(element, load);
         } else {
           ResolvedNode<Object> resolvedNode = new ResolvedNode<>(element, null);

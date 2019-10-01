@@ -3,10 +3,10 @@ package com.iodesystems.xml.tools;
 import com.iodesystems.xml.tools.loaded.FileLoaded;
 import com.iodesystems.xml.tools.loaded.LoadErrored;
 import com.iodesystems.xml.tools.loaded.Loaded;
+import com.iodesystems.xml.tools.loaded.XmlLocation;
 import com.iodesystems.xml.tools.xsd.external.External;
 import com.iodesystems.xml.tools.xsd.sample.Sample;
 import com.iodesystems.xml.tools.xsd.sample.SampleEmbedded;
-import javax.xml.stream.Location;
 import org.junit.Test;
 
 public class LoaderTest {
@@ -24,7 +24,8 @@ public class LoaderTest {
       Sample sample = load.getValue();
       SampleEmbedded sampleEmbedded = sample.getSampleEmbedded();
       String sampleValue = sampleEmbedded.getSampleValue();
-      Location location = load.getLocation(sampleEmbedded);
+      XmlLocation location = load.getLocation(sample.getExternal().get(1));
+      String s = location.toString();
       load = ((FileLoaded<Sample>) load).reload();
       System.out.println();
 

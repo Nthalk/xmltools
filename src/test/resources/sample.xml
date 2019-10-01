@@ -4,7 +4,7 @@
     <sample-embededded sample-value="HEYO!"/>
   </test>
   <test2>
-    <external:external external-attribute="yaya"/>
+    <external:external external-attribute="yaya2"/>
   </test2>
   <what attribute="value"/>
 </sample>

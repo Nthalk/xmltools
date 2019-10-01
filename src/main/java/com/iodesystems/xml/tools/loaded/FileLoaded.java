@@ -2,7 +2,6 @@ package com.iodesystems.xml.tools.loaded;
 
 import com.iodesystems.xml.tools.Locator;
 import com.iodesystems.xml.tools.XmlLoader;
-import javax.xml.stream.Location;
 
 public class FileLoaded<T> implements Loaded<T> {
 
@@ -24,7 +23,7 @@ public class FileLoaded<T> implements Loaded<T> {
   }
 
   @Override
-  public Location getLocation(Object o) {
+  public XmlLocation getLocation(Object o) {
     return locator.getLocation(o);
   }
 

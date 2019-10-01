@@ -15,7 +15,7 @@ public class NodeLoadErrored extends LoadErrored {
       Node nodeSource,
       Locator nodeLocator,
       Class loadClass,
-      Exception loadException,
+      Throwable loadException,
       XmlLoader xmlLoader) {
     super(loadException);
     this.nodeSource = nodeSource;

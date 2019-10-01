@@ -1,5 +1,6 @@
 package com.iodesystems.xml.tools;
 
+import com.iodesystems.xml.tools.loaded.XmlLocation;
 import java.util.HashMap;
 import java.util.Map;
 import javax.xml.bind.Unmarshaller;
@@ -17,14 +18,16 @@ public class Locator extends Unmarshaller.Listener {
           locations.put(target, xsr.getLocation());
         }
       };
+  private String xmlSource;
 
-  public Locator(XMLStreamReader xsr) {
+  public Locator(String xmlSource, XMLStreamReader xsr) {
+    this.xmlSource = xmlSource;
     this.xsr = xsr;
     this.locations = new HashMap<>();
   }
 
-  public Location getLocation(Object o) {
-    return locations.get(o);
+  public XmlLocation getLocation(Object o) {
+    return new XmlLocation(xmlSource, locations.get(o));
   }
 
   public void alias(Object node, Object resolved) {

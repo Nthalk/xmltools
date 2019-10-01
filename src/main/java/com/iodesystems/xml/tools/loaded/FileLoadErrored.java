@@ -9,7 +9,7 @@ public class FileLoadErrored extends LoadErrored {
   private final XmlLoader xmlLoader;
 
   public FileLoadErrored(
-      String fileSource, Class loadClass, Exception loadException, XmlLoader xmlLoader) {
+      String fileSource, Class loadClass, Throwable loadException, XmlLoader xmlLoader) {
     super(loadException);
     this.fileSource = fileSource;
     this.loadClass = loadClass;
